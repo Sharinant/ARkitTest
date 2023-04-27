@@ -101,7 +101,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         configurationPlane.maximumNumberOfTrackedImages = 1
         
         sceneView.session.run(configurationPlane,options: [.resetTracking,.removeExistingAnchors])
-        sceneView.debugOptions = [.showPhysicsShapes]
+        sceneView.debugOptions = []
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -220,16 +220,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
             let location = touch.location(in: sceneView)
             let hits = sceneView.hitTest(location)
                     if let tappedNode = hits.first?.node {
-                        tappedNode.removeFromParentNode()
-                        counter(with: 0)
-
+                        if tappedNode.categoryBitMask == BodyType.cube.rawValue {
+                            tappedNode.removeFromParentNode()
+                            counter(with: 0)
+                        }
                     } else {
 
                     }
         }
-        
-        
-        
         
     }
     
@@ -257,17 +255,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         return boxNode
     }
     
-    private func createCoin() {
+    private func createCoin() -> SCNNode {
         
-        guard let newScene = SCNScene(named: "coin.usdz") else {return}
-        guard let coinNode = newScene.rootNode.childNode(withName: "Coin", recursively: true) else {return}
+        guard let newScene = SCNScene(named: "coin.usdz") else {return SCNNode()}
+        guard let coinNode = newScene.rootNode.childNode(withName: "Coin", recursively: true) else {return SCNNode()}
         
         coinNode.transform = SCNMatrix4(planeResult!.worldTransform)
         let position = SCNVector3(x: Float.random(in: -5...5), y: cubesArray[0].position.y, z: Float.random(in: -5...5))
         
         
         coinNode.position = position
-        sceneView.scene.rootNode.addChildNode(coinNode)
+       
         
         let body = SCNPhysicsBody(type: .static, shape: nil)
         coinNode.physicsBody = body
@@ -282,6 +280,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         
         coinsArray.append(coinNode)
         
+        return coinNode
     }
     
     private func createCrystal() -> SCNNode {
@@ -403,7 +402,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         if countCoinsOnScreen < 20 {
             
             DispatchQueue.global(qos: .userInitiated).async {
-                self.createCoin()
+                let coin = self.createCoin()
+                self.sceneView.scene.rootNode.addChildNode(coin)
+
             }
 
             
@@ -414,6 +415,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     private func startGame() {
         countCollectedCoins = 0
         countCoinsOnScreen = 0
+        labelCounter.text = String(countCollectedCoins)
+
        timerForCoins = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(playGame), userInfo: nil, repeats: true)
     }
     
@@ -424,7 +427,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         coinsArray.forEach { coin in
             coin.removeFromParentNode()
         }
-        labelCounter.text = "0"
+        labelCounter.text = String(countCollectedCoins)
     }
     
     private func increaseSpeed() {
