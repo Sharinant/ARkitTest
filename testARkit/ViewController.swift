@@ -26,7 +26,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     private let labelCounter : UILabel = {
         let label = UILabel()
         label.textColor = .black
-        label.text = "123"
+        label.text = "0"
         return label
     }()
     
@@ -139,7 +139,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
             counterCoinsView.topAnchor.constraint(equalTo: sceneView.topAnchor,constant: 50)
         ])
         
-        labelCounter.text = String(countCollectedCoins)
         labelCounter.frame = counterCoinsView.bounds
     }
     
@@ -175,18 +174,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
             contact.nodeB.removeFromParentNode()
         }
         
-         let soundUrl = NSURL(fileURLWithPath: pathForSound!)
-    
-        
-        DispatchQueue.main.async {
-            self.countCollectedCoins += 1
-            self.labelCounter.text = String(self.countCollectedCoins)
-            AudioServicesCreateSystemSoundID(soundUrl , &self.soundID)
-            AudioServicesPlaySystemSound(self.soundID)
+        if (contact.nodeA.categoryBitMask == BodyType.coin.rawValue &&  contact.nodeB.categoryBitMask == BodyType.cube.rawValue) || (contact.nodeA.categoryBitMask == BodyType.cube.rawValue &&  contact.nodeB.categoryBitMask == BodyType.coin.rawValue)  {
+            
+            let soundUrl = NSURL(fileURLWithPath: pathForSound!)
+       
+           
+           DispatchQueue.main.async {
+               self.countCollectedCoins += 1
+               self.labelCounter.text = String(self.countCollectedCoins)
+               AudioServicesCreateSystemSoundID(soundUrl , &self.soundID)
+               AudioServicesPlaySystemSound(self.soundID)
+           }
         }
-        
-        //view update
-        //play sound
         
         
     }
@@ -425,6 +424,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         coinsArray.forEach { coin in
             coin.removeFromParentNode()
         }
+        labelCounter.text = "0"
     }
     
     private func increaseSpeed() {
@@ -470,8 +470,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     @objc private func allMoveUp() {
                
         let move = SCNAction.moveBy(x: 0, y: 0, z: -0.1 * speedScale, duration: 0.1)
-
-        print(speedScale)
         
         cubesArray.forEach { cube in
             cube.runAction(move)
