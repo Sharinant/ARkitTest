@@ -19,7 +19,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     
     private let counterCoinsView : UIView = {
         let view = UIView()
-        
         return view
     }()
     
@@ -30,9 +29,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         return label
     }()
     
-    private var images : Set<ARReferenceImage> = [] {didSet{
+    private var images : Set<ARReferenceImage> = [] {
+        didSet
+        {
         self.configAr()
-    }}
+    }
+        
+    }
     
     private var countCollectedCoins : Int = 0
     
@@ -84,7 +87,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
         
         sceneView.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(longPressCube(touch:))))
         sceneView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(shortPressCube(touch:))))
-        
         
         
     }
@@ -370,20 +372,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     
     
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        // make sure this is an image anchor, otherwise bail out
         guard let imageAnchor = anchor as? ARImageAnchor else { return nil }
 
-        // create a plane at the exact physical width and height of our reference image
         let plane = SCNPlane(width: imageAnchor.referenceImage.physicalSize.width, height: imageAnchor.referenceImage.physicalSize.height)
 
-        // make the plane have a transparent blue color
         plane.firstMaterial?.diffuse.contents = UIColor.blue.withAlphaComponent(0.5)
 
-        // wrap the plane in a node and rotate it so it's facing us
         let planeNode = SCNNode(geometry: plane)
         planeNode.eulerAngles.x = -.pi / 2
 
-        // now wrap that in another node and send it back
         let node = SCNNode()
         
         let crystal = createCrystal()
@@ -404,10 +401,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
             DispatchQueue.global(qos: .userInitiated).async {
                 let coin = self.createCoin()
                 self.sceneView.scene.rootNode.addChildNode(coin)
-
             }
-
-            
             countCoinsOnScreen+=1
         }
     }
